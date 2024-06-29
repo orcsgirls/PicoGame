@@ -33,9 +33,7 @@ class Picodisplay():
         tft_rst = board.GP12
         display_bus = FourWire(spi, command=tft_dc, chip_select=tft_cs, reset=tft_rst)
         
-        self.width = 320
-        self.height = 170
-        self.display = ST7789(display_bus, width=self.width, height=self.height, colstart=35, rotation=90)
+        self.display = ST7789(display_bus, rotation=270, width=240, height=135, rowstart=40, colstart=53)
 
         self.joystickUp = Button(board.GP2)
         self.joystickDown = Button(board.GP18)
