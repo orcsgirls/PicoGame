@@ -1,7 +1,3 @@
-# SPDX-FileCopyrightText: 2019 Carter Nelson for Adafruit Industries
-#
-# SPDX-License-Identifier: MIT
-
 import board
 import busio
 import displayio
@@ -9,53 +5,12 @@ from fourwire import FourWire
 from adafruit_st7789 import ST7789
 import adafruit_imageload
 from digitalio import DigitalInOut, Direction, Pull
+from picodisplay import Picodisplay
 
-
-class button():
-    def __init__(self, pin):
-        self.btn = DigitalInOut(pin)
-        self.btn.direction = Direction.INPUT
-        self.btn.pull = Pull.UP
-        self.lastState = self.btn.value
-
-    def isPressed(self):
-        currentState = self.btn.value
-        if currentState != self.lastState:
-            self.lastState=currentState
-            return currentState
-        else:
-            return False
-
-    @property
-    def value(self):
-        return self.btn.value
-        
-class picodisplay():
-    def __init__(self):
-        displayio.release_displays()       
-        spi = busio.SPI(clock=board.GP10, MOSI=board.GP11, MISO=None)
-        tft_cs = board.GP9
-        tft_dc = board.GP8
-        tft_rst = board.GP12
-        display_bus = FourWire(spi, command=tft_dc, chip_select=tft_cs, reset=tft_rst)
-        
-        self.width = 320
-        self.height = 170
-        self.display = ST7789(display_bus, width=self.width, height=self.height, colstart=35, rotation=90)
-
-        self.joystickUp = button(board.GP2)
-        self.joystickDown = button(board.GP18)
-        self.joystickLeft = button(board.GP16)
-        self.joystickRight = button(board.GP20)
-        self.joystickCenter = button(board.GP3)
-        self.buttonA = button(board.GP15)
-        self.buttonB = button(board.GP17)
-
-
-pico=picodisplay()
+pico = Picodisplay()
 
 # Load the sprite sheet (bitmap)
-sprite_sheet, palette = adafruit_imageload.load("/castle_sprite_sheet.bmp",
+sprite_sheet, palette = adafruit_imageload.load("/sprites/castle_sprite_sheet.bmp",
                                                 bitmap=displayio.Bitmap,
                                                 palette=displayio.Palette)
 

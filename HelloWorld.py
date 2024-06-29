@@ -1,44 +1,21 @@
-# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
-# SPDX-License-Identifier: MIT
-
-"""
-This test will initialize the display using displayio and draw a solid green
-background, a smaller purple rectangle, and some yellow text.
-"""
 import board
 import busio
 import terminalio
 import displayio
-
-# Starting in CircuitPython 9.x fourwire will be a seperate internal library
-# rather than a component of the displayio library
-try:
-    from fourwire import FourWire
-except ImportError:
-    from displayio import FourWire
+from picodisplay import Picodisplay
 from adafruit_display_text import label
 from adafruit_st7789 import ST7789
 
 BORDER_WIDTH = 20
 TEXT_SCALE = 3
 
-# Release any resources currently in use for the displays
-displayio.release_displays()
-
-spi = busio.SPI(clock=board.GP10, MOSI=board.GP11, MISO=None)
-tft_cs = board.GP9
-tft_dc = board.GP8
-tft_rst = board.GP12
-
-display_bus = FourWire(spi, command=tft_dc, chip_select=tft_cs, reset=tft_rst)
-
-display = ST7789(display_bus, width=320, height=170, colstart=35, rotation=90)
+pico = Picodisplay()
 
 # Make the display context
 splash = displayio.Group()
-display.root_group = splash
+pico.display.root_group = splash
 
-color_bitmap = displayio.Bitmap(display.width, display.height, 1)
+color_bitmap = displayio.Bitmap(pico.display.width, pico.display.height, 1)
 color_palette = displayio.Palette(1)
 color_palette[0] = 0x00FF00  # Bright Green
 bg_sprite = displayio.TileGrid(color_bitmap, pixel_shader=color_palette, x=0, y=0)
@@ -46,7 +23,7 @@ splash.append(bg_sprite)
 
 # Draw a smaller inner rectangle
 inner_bitmap = displayio.Bitmap(
-    display.width - (BORDER_WIDTH * 2), display.height - (BORDER_WIDTH * 2), 1
+    pico.display.width - (BORDER_WIDTH * 2), pico.display.height - (BORDER_WIDTH * 2), 1
 )
 inner_palette = displayio.Palette(1)
 inner_palette[0] = 0xAA0088  # Purple
@@ -62,7 +39,7 @@ text_area = label.Label(
     color=0xFFFF00,
     scale=TEXT_SCALE,
     anchor_point=(0.5, 0.5),
-    anchored_position=(display.width // 2, display.height // 2),
+    anchored_position=(pico.display.width // 2, pico.display.height // 2),
 )
 splash.append(text_area)
 
