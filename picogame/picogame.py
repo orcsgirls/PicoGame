@@ -40,23 +40,69 @@ class Picogame():
     def append(self, obj):
         self.game.append(obj)
 
+#-----------------------------------------------------------------------------------------------------------            
+class GameObject():
+    
+    def __init__(self):
+        pass
+      
+    @property
+    def x(self):
+        return self.group.x
+
+    @x.setter
+    def x(self, value):
+        if(value >=0 and value <= self.game.display.width):
+            self.group.x = value
+
+    @property
+    def y(self):
+        return self.group.y
+
+    @y.setter
+    def y(self, value):
+        if(value >=0 and value <= self.game.display.height):
+            self.group.y = int(value-self.scale*8)
+        
+    @property
+    def height(self):
+        return self.height
+        
+    @property
+    def width(self):
+        return self.width
+            
+    @property    
+    def visible(self):
+        return not self.group.hidden
+
+    @visible.setter
+    def visible(self, visible):
+        self.group.hidden = not visible    
+        
 #-----------------------------------------------------------------------------------------------------------
 class Wall():
     def __init__(self, game, gap=30, thickness=10, wall_color=0x0000FF, gap_color=0x000000):
         self.game = game
         self.gap = gap
+        self.wall_color = wall_color 
+        self.gap_color = gap_color
         self.thickness = thickness
+        self.group = displayio.Group()
         self.solid = Rect(0, 0, self.thickness, self.game.display.height, fill=wall_color)
         self.hole = Rect(0, 0, self.thickness, self.gap, fill=gap_color)
-        self.game.append(self.solid)
-        self.game.append(self.hole)
+        self.group.append(self.solid)
+        self.group.append(self.hole)
+        self.game.append(self.group)
         self.reset()
         
     def reset(self):
         self.solid.x = self.game.display.width
-        self.hole.x = self.game.display.width
         self.solid.y = 0
+        self.solid.fill = self.wall_color
+        self.hole.x = self.game.display.width
         self.hole.y = int((self.game.display.height-self.gap)/2)
+        self.hole.fill = self.gap_color
         
     @property
     def x(self):
@@ -66,7 +112,7 @@ class Wall():
     def x(self, value):
         self.solid.x = value
         self.hole.x = value
-
+        
     @property
     def y(self):
         return int(self.hole.y+int(self.gap/2))
@@ -82,36 +128,36 @@ class Wall():
     @property
     def width(self):
         return self.thickness
+    
+    @property
+    def color(self):
+        return self.solid.fill
+        
+    @color.setter
+    def color(self, color):
+        self.solid.fill = color
         
 #-----------------------------------------------------------------------------------------------------------
-class Ball():
+class Ball(GameObject):
     def __init__(self, game, radius=10, color=0x00FF00):
         self.game = game
         self.radius = radius
-        self.ball = Circle(0, 0, radius, fill=color)
-        self.game.append(self.ball)
+        self.group = Circle(0, 0, radius, fill=color)
+        self.game.append(self.group)
         self.reset()
 
     def reset(self):
-        self.ball.x = 10
-        self.ball.y = int(self.game.display.height/2)-self.radius
-        
-    @property
-    def x(self):
-        return self.ball.x
-
-    @x.setter
-    def x(self, value):
-        self.ball.x = value
+        self.group.x = 10
+        self.group.y = int(self.game.display.height/2)-self.radius
 
     @property
     def y(self):
-        return int(self.ball.y+self.radius)
+        return int(self.group.y+self.radius)
 
     @y.setter
     def y(self, value):
         if(value >=0 and value <= self.game.display.height):
-            self.ball.y = int(value-self.radius)
+            self.group.y = int(value-self.radius)
         
     @property
     def height(self):
@@ -122,32 +168,40 @@ class Ball():
         return 2*self.radius
         
 #-----------------------------------------------------------------------------------------------------------
-class Score():
+class Score(GameObject):
     def __init__(self, game, font_size=3, x=190, y=20, color=0xFFFF00):
         self.game = game
-        self.score = label.Label(terminalio.FONT, color=color, scale=font_size)
-        self.score.x = x
-        self.score.y = y
-        self.game.append(self.score)
+        self.group = label.Label(terminalio.FONT, color=color, scale=font_size)
+        self.group.x = x
+        self.group.y = y
+        self.game.append(self.group)
         self.reset()
         
     def reset(self):
-        self.score.text = "0"
+        self.group.text = "0"
 
     @property
     def value(self):
-        return int(self.score.text)
+        return int(self.group.text)
 
     @value.setter
     def value(self, value):
-        self.score.text = str(value)
+        self.group.text = str(value)
         
     @value.setter
     def string(self, string):
-        self.score.text = string
-
+        self.group.text = string
+        
+    @property
+    def textColor(self):
+        return self.group.color
+        
+    @textColor.setter
+    def textColor(self, color):
+        self.group.color = color
+        
 #-----------------------------------------------------------------------------------------------------------
-class Sign():
+class Sign(GameObject):
     def __init__(self, game, string="ORCSGirls", border_width=20, text_scale=3, 
                              outer_color=0x3333FF, inner_color=0xAA0088, text_color=0xFFFF00):
         self.game = game
@@ -157,13 +211,14 @@ class Sign():
         self.outer_color = outer_color
         self.inner_color = inner_color
         self.text_color = text_color
+        self.group = displayio.Group()
         
         # Big rectangle
         self.color_bitmap = displayio.Bitmap(self.game.display.width, self.game.display.height, 1)
         self.color_palette = displayio.Palette(1)
         self.color_palette[0] = self.outer_color
         self.bg_sprite = displayio.TileGrid(self.color_bitmap, pixel_shader=self.color_palette, x=0, y=0)
-        self.game.append(self.bg_sprite)
+        self.group.append(self.bg_sprite)
 
         # Draw a smaller inner rectangle
         self.inner_bitmap = displayio.Bitmap(self.game.display.width-(self.border_width*2), 
@@ -172,13 +227,14 @@ class Sign():
         self.inner_palette[0] = self.inner_color
         self.inner_sprite = displayio.TileGrid(self.inner_bitmap, pixel_shader=self.inner_palette, 
                                                x=self.border_width, y=self.border_width)
-        self.game.append(self.inner_sprite)
+        self.group.append(self.inner_sprite)
 
         # Draw a label
         self.text_area = label.Label(terminalio.FONT, text=self.string, color=self.text_color,
                                      scale=self.text_scale, anchor_point=(0.5, 0.5),
                                      anchored_position=(self.game.display.width//2, self.game.display.height//2))
-        self.game.append(self.text_area)
+        self.group.append(self.text_area)
+        self.game.append(self.group)
     
     def switch(self):
         outer_color=self.color_palette[0]
@@ -191,15 +247,42 @@ class Sign():
         
     @property
     def text(self):
-        return int(self.text_area.text)
+        return self.text_area.text
         
     @text.setter
     def text(self, string):
         self.text_area.text = string
 
-#-----------------------------------------------------------------------------------------------------------
-class Sprite():
+    @property
+    def textColor(self):
+        return self.text_area.color
+        
+    @textColor.setter
+    def textColor(self, color):
+        self.text_area.color = color
+
+    @property
+    def innerColor(self):
+        return self.inner_palette[0]
+        
+    @innerColor.setter
+    def innerColor(self, color):
+        self.inner_palette[0] = color
+        
+    @property
+    def outerColor(self):
+        return self.color_palette[0]
+        
+    @outerColor.setter
+    def outerColor(self, color):
+        self.color_palette[0] = color
     
+    @property
+    def outerColor(self):
+        return self.color_palette[0]
+        
+#-----------------------------------------------------------------------------------------------------------
+class Sprite(GameObject):
     
     def __init__(self, game, index=1, scale=1):
         sprite_file = "/sprites/cp_sprite_sheet.bmp"
@@ -218,14 +301,6 @@ class Sprite():
         self.sprite[0] = self.index
         self.group.x = 10
         self.group.y = int(self.game.display.height/2)-self.scale*8
-        
-    @property
-    def x(self):
-        return self.group.x
-
-    @x.setter
-    def x(self, value):
-        self.group.x = value
 
     @property
     def y(self):
@@ -254,7 +329,8 @@ class Sprite():
             self.index = int(value)
         else:
             print('Invalid index')
-            
+
+
 #-----------------------------------------------------------------------------------------------------------    
 class Button():
     def __init__(self, pin):
