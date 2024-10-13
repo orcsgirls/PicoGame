@@ -17,13 +17,13 @@ from digitalio import DigitalInOut, Direction, Pull
 
 class Picogame():
     def __init__(self):
-        displayio.release_displays()       
+        displayio.release_displays()
         spi = busio.SPI(clock=board.GP10, MOSI=board.GP11, MISO=None)
         tft_cs = board.GP9
         tft_dc = board.GP8
         tft_rst = board.GP12
         display_bus = FourWire(spi, command=tft_dc, chip_select=tft_cs, reset=tft_rst)
-        
+
         self.display = ST7789(display_bus, rotation=270, width=240, height=135, rowstart=40, colstart=53)
 
         self.joystickUp = Button(board.GP2)
@@ -33,19 +33,19 @@ class Picogame():
         self.joystickCenter = Button(board.GP3)
         self.buttonA = Button(board.GP15)
         self.buttonB = Button(board.GP17)
-        
+
         self.game = displayio.Group()
         self.display.root_group = self.game
-        
+
     def append(self, obj):
         self.game.append(obj)
 
-#-----------------------------------------------------------------------------------------------------------            
+#-----------------------------------------------------------------------------------------------------------
 class GameObject():
-    
+
     def __init__(self):
         pass
-      
+
     @property
     def x(self):
         return self.group.x
@@ -63,29 +63,29 @@ class GameObject():
     def y(self, value):
         if(value >=0 and value <= self.game.display.height):
             self.group.y = int(value-self.scale*8)
-        
+
     @property
     def height(self):
         return self.height
-        
+
     @property
     def width(self):
         return self.width
-            
-    @property    
+
+    @property
     def visible(self):
         return not self.group.hidden
 
     @visible.setter
     def visible(self, visible):
-        self.group.hidden = not visible    
-        
+        self.group.hidden = not visible
+
 #-----------------------------------------------------------------------------------------------------------
 class Wall():
     def __init__(self, game, gap=30, thickness=10, wall_color=0x0000FF, gap_color=0x000000):
         self.game = game
         self.gap = gap
-        self.wall_color = wall_color 
+        self.wall_color = wall_color
         self.gap_color = gap_color
         self.thickness = thickness
         self.group = displayio.Group()
@@ -95,7 +95,7 @@ class Wall():
         self.group.append(self.hole)
         self.game.append(self.group)
         self.reset()
-        
+
     def reset(self):
         self.solid.x = self.game.display.width
         self.solid.y = 0
@@ -103,7 +103,7 @@ class Wall():
         self.hole.x = self.game.display.width
         self.hole.y = int((self.game.display.height-self.gap)/2)
         self.hole.fill = self.gap_color
-        
+
     @property
     def x(self):
         return self.hole.x
@@ -112,7 +112,7 @@ class Wall():
     def x(self, value):
         self.solid.x = value
         self.hole.x = value
-        
+
     @property
     def y(self):
         return int(self.hole.y+int(self.gap/2))
@@ -120,7 +120,7 @@ class Wall():
     @y.setter
     def y(self, value):
         self.hole.y = int(value-int(self.gap/2))
-        
+
     @property
     def height(self):
         return self.gap
@@ -128,15 +128,15 @@ class Wall():
     @property
     def width(self):
         return self.thickness
-    
+
     @property
     def color(self):
         return self.solid.fill
-        
+
     @color.setter
     def color(self, color):
         self.solid.fill = color
-        
+
 #-----------------------------------------------------------------------------------------------------------
 class Ball(GameObject):
     def __init__(self, game, radius=10, color=0x00FF00):
@@ -158,51 +158,69 @@ class Ball(GameObject):
     def y(self, value):
         if(value >=0 and value <= self.game.display.height):
             self.group.y = int(value-self.radius)
-        
+
     @property
     def height(self):
         return 2*self.radius
-        
+
     @property
     def width(self):
         return 2*self.radius
-        
+
 #-----------------------------------------------------------------------------------------------------------
-class Score(GameObject):
-    def __init__(self, game, font_size=3, x=190, y=20, color=0xFFFF00):
+class Text(GameObject):
+    def __init__(self, game, font_size=3, x=0, y=0, color=0xFFFF00):
         self.game = game
         self.group = label.Label(terminalio.FONT, color=color, scale=font_size)
         self.group.x = x
         self.group.y = y
         self.game.append(self.group)
         self.reset()
-        
-    def reset(self):
-        self.group.text = "0"
 
     @property
-    def value(self):
-        return int(self.group.text)
+    def text(self):
+        return self.group.text
 
-    @value.setter
-    def value(self, value):
-        self.group.text = str(value)
-        
-    @value.setter
-    def string(self, string):
+    @text.setter
+    def text(self, string):
         self.group.text = string
-        
+
     @property
     def textColor(self):
         return self.group.color
-        
+
     @textColor.setter
     def textColor(self, color):
         self.group.color = color
-        
+
+#-----------------------------------------------------------------------------------------------------------
+class Score(Text):
+    def __init__(self, game, font_size=3, x=190, y=20, color=0xFFFF00):
+        super(Score, self).__init__(game, font_size=3, x=190, y=20, color=0xFFFF00)
+        self.score_value = 0
+        self.reset()
+
+    def reset(self):
+        self.score_value = 0
+        self.group.text = str(self.score_value)
+
+    def add(self, points):
+        self.score_value = self.score_value + points
+        self.group.text = str(self.score_value)
+
+    @property
+    def value(self):
+        return self.score_value
+
+    @value.setter
+    def value(self, value):
+        self.score_value = value
+        self.group.text = str(self.score_value)
+
+
 #-----------------------------------------------------------------------------------------------------------
 class Sign(GameObject):
-    def __init__(self, game, string="ORCSGirls", border_width=20, text_scale=3, 
+    def __init__(self, game, string="ORCSGirls", border_width=20, text_scale=3,
                              outer_color=0x3333FF, inner_color=0xAA0088, text_color=0xFFFF00):
         self.game = game
         self.string = string
@@ -212,7 +230,7 @@ class Sign(GameObject):
         self.inner_color = inner_color
         self.text_color = text_color
         self.group = displayio.Group()
-        
+
         # Big rectangle
         self.color_bitmap = displayio.Bitmap(self.game.display.width, self.game.display.height, 1)
         self.color_palette = displayio.Palette(1)
@@ -221,11 +239,11 @@ class Sign(GameObject):
         self.group.append(self.bg_sprite)
 
         # Draw a smaller inner rectangle
-        self.inner_bitmap = displayio.Bitmap(self.game.display.width-(self.border_width*2), 
+        self.inner_bitmap = displayio.Bitmap(self.game.display.width-(self.border_width*2),
                                         self.game.display.height-(self.border_width*2), 1)
         self.inner_palette = displayio.Palette(1)
         self.inner_palette[0] = self.inner_color
-        self.inner_sprite = displayio.TileGrid(self.inner_bitmap, pixel_shader=self.inner_palette, 
+        self.inner_sprite = displayio.TileGrid(self.inner_bitmap, pixel_shader=self.inner_palette,
                                                x=self.border_width, y=self.border_width)
         self.group.append(self.inner_sprite)
 
@@ -235,20 +253,20 @@ class Sign(GameObject):
                                      anchored_position=(self.game.display.width//2, self.game.display.height//2))
         self.group.append(self.text_area)
         self.game.append(self.group)
-    
+
     def switch(self):
         outer_color=self.color_palette[0]
         inner_color=self.inner_palette[0]
         self.color_palette[0] = inner_color
         self.inner_palette[0] = outer_color
-        
+
     def reset(self):
         self.text_area.text = "ORCSGirls"
-        
+
     @property
     def text(self):
         return self.text_area.text
-        
+
     @text.setter
     def text(self, string):
         self.text_area.text = string
@@ -256,7 +274,7 @@ class Sign(GameObject):
     @property
     def textColor(self):
         return self.text_area.color
-        
+
     @textColor.setter
     def textColor(self, color):
         self.text_area.color = color
@@ -264,26 +282,26 @@ class Sign(GameObject):
     @property
     def innerColor(self):
         return self.inner_palette[0]
-        
+
     @innerColor.setter
     def innerColor(self, color):
         self.inner_palette[0] = color
-        
+
     @property
     def outerColor(self):
         return self.color_palette[0]
-        
+
     @outerColor.setter
     def outerColor(self, color):
         self.color_palette[0] = color
-    
+
     @property
     def outerColor(self):
         return self.color_palette[0]
-        
+
 #-----------------------------------------------------------------------------------------------------------
 class Sprite(GameObject):
-    
+
     def __init__(self, game, index=1, scale=1):
         sprite_file = "/sprites/cp_sprite_sheet.bmp"
         self.game = game
@@ -310,15 +328,15 @@ class Sprite(GameObject):
     def y(self, value):
         if(value >=0 and value <= self.game.display.height):
             self.group.y = int(value-self.scale*8)
-        
+
     @property
     def height(self):
         return self.scale*16
-        
+
     @property
     def width(self):
         return self.scale*16
-    
+
     @property
     def type(self):
         return self.index
@@ -331,7 +349,7 @@ class Sprite(GameObject):
             print('Invalid index')
 
 
-#-----------------------------------------------------------------------------------------------------------    
+#-----------------------------------------------------------------------------------------------------------
 class Button():
     def __init__(self, pin):
         self.btn = DigitalInOut(pin)
@@ -350,4 +368,4 @@ class Button():
     @property
     def value(self):
         return self.btn.value
-        
+
