@@ -177,6 +177,9 @@ class Text(GameObject):
         self.game.append(self.group)
         self.reset()
 
+    def reset(self):
+        self.group.text = ""
+        
     @property
     def text(self):
         return self.group.text
