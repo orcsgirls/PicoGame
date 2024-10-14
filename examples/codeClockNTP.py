@@ -3,9 +3,14 @@ import time
 import ssl
 import wifi
 import socketpool
-import rtc
 import adafruit_ntp
 from picogame import *
+
+# Creating the sign
+game=Picogame()
+current=Text(game, font_size=4, x=25, y=50)
+date=Text(game, font_size=2, x=25, y=85, color=0x0000ff)
+date.text="Connecting to WiFi"
 
 # Connect to WiFi and NTP server (network time protocol)
 wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'), os.getenv('CIRCUITPY_WIFI_PASSWORD'))
@@ -16,10 +21,7 @@ ntp = adafruit_ntp.NTP(pool, tz_offset=-4, cache_seconds=3600)
 day=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 month=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-# Creating the sign
-game=Picogame()
-current=Text(game, font_size=4, x=25, y=50)
-date=Text(game, font_size=2, x=25, y=85, color=0x0000ff)
+
 
 while True:
     now=ntp.datetime
