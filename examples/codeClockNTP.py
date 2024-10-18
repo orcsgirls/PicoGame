@@ -30,6 +30,6 @@ while True:
         current.text=f"{now.tm_hour:02}:{now.tm_min:02}:{now.tm_sec:02}"
         date.text=f"{day[now.tm_wday]} {month[now.tm_mon-1]} {now.tm_mday}, {now.tm_year}"
         time.sleep(1)
-    except TimeoutException:
+    except TimeoutError:
         date.text="Timed out"
         time.sleep(10)
