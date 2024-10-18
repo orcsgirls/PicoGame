@@ -3,6 +3,7 @@ import busio
 import displayio
 import terminalio
 import adafruit_imageload
+import time
 from adafruit_display_text import label
 from adafruit_display_shapes.circle import Circle
 from adafruit_display_shapes.rect import Rect
@@ -352,6 +353,39 @@ class Sprite(GameObject):
         else:
             print('Invalid index')
 
+#-----------------------------------------------------------------------------------------------------------
+class Timer():
+
+    def __init__(self):
+        self.current_status = 'stopped'
+        self.start_time = 0
+        self.stop_time = 0
+
+    def start(self):
+        if(self.current_status == 'stopped'):
+            self.start_time = time.monotonic()
+        self.current_status = 'running'
+
+    def stop(self):
+        if(self.current_status == 'running'):
+            self.stop_time = time.monotonic() - self.start_time
+        self.current_status = 'stopped'
+
+    def reset(self):
+        self.current_status = 'stopped'
+        self.start_time = 0
+        self.stop_time = 0
+
+    @property
+    def status(self):
+        return self.current_status
+
+    @property
+    def value(self):
+        if(self.current_status == 'running'):
+            return (time.monotonic() - self.start_time)
+        else:
+            return self.stop_time
 
 #-----------------------------------------------------------------------------------------------------------
 class Button():
