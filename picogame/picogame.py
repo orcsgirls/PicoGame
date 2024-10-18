@@ -46,14 +46,16 @@ class GameObject():
     def __init__(self):
         pass
 
+    def reset(self):
+        pass
+
     @property
     def x(self):
         return self.group.x
 
     @x.setter
     def x(self, value):
-        if(value >=0 and value <= self.game.display.width):
-            self.group.x = value
+        self.group.x = value
 
     @property
     def y(self):
@@ -61,8 +63,7 @@ class GameObject():
 
     @y.setter
     def y(self, value):
-        if(value >=0 and value <= self.game.display.height):
-            self.group.y = int(value-self.scale*8)
+        self.group.y = int(value-self.scale*8)
 
     @property
     def height(self):
@@ -169,9 +170,10 @@ class Ball(GameObject):
 
 #-----------------------------------------------------------------------------------------------------------
 class Text(GameObject):
-    def __init__(self, game, font_size=3, x=0, y=0, color=0xFFFF00):
+    def __init__(self, game, font_size=3, x=0, y=0, color=0xFFFF00, anchor=(0.0,0.0)):
         self.game = game
-        self.group = label.Label(terminalio.FONT, color=color, scale=font_size)
+        self.group = label.Label(terminalio.FONT, color=color, scale=font_size,
+                                 anchor_point=anchor, anchored_position=(x,y))
         self.group.x = x
         self.group.y = y
         self.game.append(self.group)
@@ -179,7 +181,7 @@ class Text(GameObject):
 
     def reset(self):
         self.group.text = ""
-        
+
     @property
     def text(self):
         return self.group.text
@@ -198,8 +200,8 @@ class Text(GameObject):
 
 #-----------------------------------------------------------------------------------------------------------
 class Score(Text):
-    def __init__(self, game, font_size=3, x=190, y=20, color=0xFFFF00):
-        super(Score, self).__init__(game, font_size=3, x=190, y=20, color=0xFFFF00)
+    def __init__(self, game, font_size=3, x=190, y=20, color=0xFFFF00, anchor=(0.0,0.0)):
+        super(Score, self).__init__(game, font_size=font_size, x=x, y=y, color=color, anchor=anchor)
         self.score_value = 0
         self.reset()
 
@@ -219,7 +221,6 @@ class Score(Text):
     def value(self, value):
         self.score_value = value
         self.group.text = str(self.score_value)
-
 
 #-----------------------------------------------------------------------------------------------------------
 class Sign(GameObject):

@@ -3,14 +3,15 @@ import time
 import ssl
 import wifi
 import socketpool
+import rtc
 import adafruit_ntp
 from picogame import *
 
 # Creating the sign
 game=Picogame()
-current=Text(game, font_size=4, x=25, y=50)
-date=Text(game, font_size=2, x=25, y=85, color=0x0000ff)
-date.text="Connecting to WiFi"
+current=Text(game, font_size=4, x=game.display.width//2, y=40, anchor=(0.5,0.5))
+date=Text(game, font_size=2, x=game.display.width//2, y=85, color=0x0000ff, anchor=(0.5,0.5))
+date.text="Connecting .."
 
 # Connect to WiFi and NTP server (network time protocol)
 wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'), os.getenv('CIRCUITPY_WIFI_PASSWORD'))
@@ -24,7 +25,11 @@ month=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'No
 
 
 while True:
-    now=ntp.datetime
-    current.text=f"{now.tm_hour:02}:{now.tm_min:02}:{now.tm_sec:02}"
-    date.text=f"{day[now.tm_wday]} {month[now.tm_mon-1]} {now.tm_mday}, {now.tm_year}"
-    time.sleep(1)
+    try:
+        now=ntp.datetime
+        current.text=f"{now.tm_hour:02}:{now.tm_min:02}:{now.tm_sec:02}"
+        date.text=f"{day[now.tm_wday]} {month[now.tm_mon-1]} {now.tm_mday}, {now.tm_year}"
+        time.sleep(1)
+    except TimeoutException:
+        date.text="Timed out"
+        time.sleep(10)
