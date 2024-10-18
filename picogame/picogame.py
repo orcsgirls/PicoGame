@@ -64,15 +64,15 @@ class GameObject():
 
     @y.setter
     def y(self, value):
-        self.group.y = int(value-self.scale*8)
+        self.group.y = value
 
     @property
     def height(self):
-        return self.height
+        return self.group.height
 
     @property
     def width(self):
-        return self.width
+        return self.group.width
 
     @property
     def visible(self):
@@ -83,7 +83,7 @@ class GameObject():
         self.group.hidden = not visible
 
 #-----------------------------------------------------------------------------------------------------------
-class Wall():
+class Wall(GameObject):
     def __init__(self, game, gap=30, thickness=10, wall_color=0x0000FF, gap_color=0x000000):
         self.game = game
         self.gap = gap
@@ -168,6 +168,14 @@ class Ball(GameObject):
     @property
     def width(self):
         return 2*self.radius
+
+#-----------------------------------------------------------------------------------------------------------
+class Box(GameObject):
+    def __init__(self, game, x=0, y=0, width=100, height=20, color=0x00FF00):
+        self.game = game
+        self.color = color
+        self.group = Rect(x, y, width, height, fill=color)
+        self.game.append(self.group)
 
 #-----------------------------------------------------------------------------------------------------------
 class Text(GameObject):
