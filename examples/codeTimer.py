@@ -18,4 +18,4 @@ while True:
         timer.stop()
 
     current.text = f"{timer.value:.4f}"
-    time.sleep(0.001)your code here :-)
+    time.sleep(0.001)

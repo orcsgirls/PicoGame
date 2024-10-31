@@ -38,7 +38,7 @@ while True:
                     time_step=0.90 * time_step
             else:
                 # Crashed
-                score.string="Boo"
+                score.text="Boo"
                 running=False
 
         # Move wall forward
