@@ -41,6 +41,9 @@ class Picogame():
     def append(self, obj):
         self.game.append(obj)
 
+    def remove(self, obj):
+        self.game.remove(obj)
+
 #-----------------------------------------------------------------------------------------------------------
 class GameObject():
 
