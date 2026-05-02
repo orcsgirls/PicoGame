@@ -311,10 +311,6 @@ class Sign(GameObject):
     def outerColor(self, color):
         self.color_palette[0] = color
 
-    @property
-    def outerColor(self):
-        return self.color_palette[0]
-
 #-----------------------------------------------------------------------------------------------------------
 class Sprite(GameObject):
 
